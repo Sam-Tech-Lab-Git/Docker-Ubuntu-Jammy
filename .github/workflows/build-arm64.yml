@@ -1,0 +1,100 @@
+name: Build & Push — arm64
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'Dockerfile-arm64'
+  schedule:
+    - cron: "30 2 1 * *" # chaque 1er du mois à 02h30 UTC
+  workflow_dispatch:
+
+jobs:
+  build-amd64:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write   # Requis pour la signature Cosign keyless
+      packages: write   # Requis pour pousser sur GHCR
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute version tag
+        id: version
+        run: |
+          TAG=$(date -u +'%Y.%m')
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+      - name: Build and push to Docker Hub
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile-arm64
+          platforms: linux/arm64
+          push: true
+          tags: |
+            samtechrepo/jammy:arm64-latest
+            samtechrepo/jammy:arm64-${{ steps.version.outputs.tag }}
+          labels: |
+            maintainer="Sam Tech Lab"
+            org.opencontainers.image.title="Ubuntu Jammy Base"
+            org.opencontainers.image.version="22.04"
+            org.opencontainers.image.description="Ubuntu Jammy base image (amd64) — légère, sécurisée et maintenue par Sam Tech Lab"
+            org.opencontainers.image.authors="Sam Tech Lab"
+            org.opencontainers.image.licenses="MIT"
+            org.opencontainers.image.architecture=arm64
+            org.opencontainers.image.source=${{ github.repository }}
+            org.opencontainers.image.vendor="Sam Tech Lab"
+            org.opencontainers.image.url="https://hub.docker.com/r/samtechrepo/jammy"
+
+      - name: Build and push to GitHub Container Registry (GHCR)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile-arm64
+          platforms: linux/arm64
+          push: true
+          tags: |
+            ghcr.io/sam-tech-lab-git/jammy:arm64-latest
+            ghcr.io/sam-tech-lab-git/jammy:arm64-${{ steps.version.outputs.tag }}
+          labels: |
+            maintainer="Sam Tech Lab"
+            org.opencontainers.image.title="Ubuntu Jammy Base"
+            org.opencontainers.image.version="22.04"
+            org.opencontainers.image.description="Ubuntu Jammy base image (arm64) — légère, sécurisée et maintenue par Sam Tech Lab"
+            org.opencontainers.image.authors="Sam Tech Lab"
+            org.opencontainers.image.licenses="MIT"
+            org.opencontainers.image.architecture=arm64
+            org.opencontainers.image.source=${{ github.repository }}
+            org.opencontainers.image.vendor="Sam Tech Lab"
+            org.opencontainers.image.url="https://ghcr.io/${{ github.repository_owner }}/jammy"
+
+      # Signature automatique des images via Cosign (OIDC keyless)
+      # - name: Install Cosign
+      #   uses: sigstore/cosign-installer@v3
+
+      # - name: Sign images (Cosign keyless)
+      #   env:
+      #     COSIGN_EXPERIMENTAL: "true"
+      #   run: |
+      #     cosign sign --yes samtechrepo/jammy:arm64-latest
+      #     cosign sign --yes samtechrepo/jammy:arm64-${{ steps.version.outputs.tag }}
