@@ -52,19 +52,19 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            samtechrepo/groovy:amd64-latest
-            samtechrepo/groovy:amd64-${{ steps.version.outputs.tag }}
+            samtechrepo/jammy:amd64-latest
+            samtechrepo/jammy:amd64-${{ steps.version.outputs.tag }}
           labels: |
             maintainer="Sam Tech Lab"
-            org.opencontainers.image.title="Ubuntu Groovy Base"
-            org.opencontainers.image.version="20.04"
-            org.opencontainers.image.description="Ubuntu Groovy base image (amd64) — légère, sécurisée et maintenue par Sam Tech Lab"
+            org.opencontainers.image.title="Ubuntu Jammy Base"
+            org.opencontainers.image.version="22.04"
+            org.opencontainers.image.description="Ubuntu Jammy base image (amd64) — légère, sécurisée et maintenue par Sam Tech Lab"
             org.opencontainers.image.authors="Sam Tech Lab"
             org.opencontainers.image.licenses="MIT"
             org.opencontainers.image.architecture=amd64
             org.opencontainers.image.source=${{ github.repository }}
             org.opencontainers.image.vendor="Sam Tech Lab"
-            org.opencontainers.image.url="https://hub.docker.com/r/samtechrepo/groovy"
+            org.opencontainers.image.url="https://hub.docker.com/r/samtechrepo/jammy"
 
       - name: Build and push to GitHub Container Registry (GHCR)
         uses: docker/build-push-action@v6
@@ -74,19 +74,19 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ghcr.io/sam-tech-lab-git/groovy:amd64-latest
-            ghcr.io/sam-tech-lab-git/groovy:amd64-${{ steps.version.outputs.tag }}
+            ghcr.io/sam-tech-lab-git/jammy:amd64-latest
+            ghcr.io/sam-tech-lab-git/jammy:amd64-${{ steps.version.outputs.tag }}
           labels: |
             maintainer="Sam Tech Lab"
-            org.opencontainers.image.title="Ubuntu Groovy Base"
-            org.opencontainers.image.version="20.04"
-            org.opencontainers.image.description="Ubuntu Groovy base image (amd64) — légère, sécurisée et maintenue par Sam Tech Lab"
+            org.opencontainers.image.title="Ubuntu Jammy Base"
+            org.opencontainers.image.version="22.04"
+            org.opencontainers.image.description="Ubuntu Jammy base image (amd64) — légère, sécurisée et maintenue par Sam Tech Lab"
             org.opencontainers.image.authors="Sam Tech Lab"
             org.opencontainers.image.licenses="MIT"
             org.opencontainers.image.architecture=amd64
             org.opencontainers.image.source=${{ github.repository }}
             org.opencontainers.image.vendor="Sam Tech Lab"
-            org.opencontainers.image.url="https://ghcr.io/${{ github.repository_owner }}/groovy"
+            org.opencontainers.image.url="https://ghcr.io/${{ github.repository_owner }}/jammy"
 
       # Signature automatique des images via Cosign (OIDC keyless)
       # - name: Install Cosign
@@ -96,5 +96,5 @@ jobs:
       #   env:
       #     COSIGN_EXPERIMENTAL: "true"
       #   run: |
-      #     cosign sign --yes samtechrepo/groovy:amd64-latest
-      #     cosign sign --yes samtechrepo/groovy:amd64-${{ steps.version.outputs.tag }}
+      #     cosign sign --yes samtechrepo/jammy:amd64-latest
+      #     cosign sign --yes samtechrepo/jammy:amd64-${{ steps.version.outputs.tag }}
