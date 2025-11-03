@@ -1,13 +1,13 @@
-# --------------------------------------- #
-# Étape 1 — Build du rootfs Ubuntu Groovy #
-# --------------------------------------- #
+# -------------------------------------- #
+# Étape 1 — Build du rootfs Ubuntu Jammy #
+# -------------------------------------- #
 
 FROM alpine:latest AS builder
 
 # Variables d'environnement
-ENV REL=noble
+ENV REL=jammy
 ENV ARCH=amd64
-ENV TAG=oci-groovy-20.10
+ENV TAG=oci-jammy-22.04
 
 # Installer les outils nécessaires pour récupérer et extraire le rootfs Ubuntu
 RUN apk add --no-cache bash curl git jq xz tar tzdata
@@ -39,13 +39,13 @@ COPY --from=builder /rootfs/ /
 # Labels conformes OCI
 ARG BUILD_DATE
 LABEL maintainer="Sam Tech Lab" \
-      org.opencontainers.image.title="Ubuntu Groovy base" \
-      org.opencontainers.image.description="Base Ubuntu 20.10, légère et sécurisée" \
-      org.opencontainers.image.version="20.10" \
+      org.opencontainers.image.title="Ubuntu Jammy base" \
+      org.opencontainers.image.description="Base Ubuntu 22.04, légère et sécurisée" \
+      org.opencontainers.image.version="22.04" \
       org.opencontainers.image.architecture="amd64" \
       org.opencontainers.image.authors="Sam Tech Lab" \
       org.opencontainers.image.licenses="MIT" \
-      org.opencontainers.image.source="https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Groovy" \
+      org.opencontainers.image.source="https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy" \
       org.opencontainers.image.created=$BUILD_DATE
 
 # Variables d’environnement globales
