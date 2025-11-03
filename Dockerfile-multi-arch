@@ -1,0 +1,139 @@
+# --------------------------------------- #
+# Étape 1 — Build du rootfs Ubuntu Groovy #
+# --------------------------------------- #
+
+FROM alpine:latest AS builder
+
+# Arguments Buildx (auto fournis : TARGETARCH, TARGETPLATFORM)
+ARG TARGETARCH
+ARG TARGETPLATFORM
+
+# Variables globales
+ENV REL=groovy
+ENV TAG=oci-groovy-20.10
+ENV ARCH=${TARGETARCH}
+
+# Installer les outils nécessaires
+RUN apk add --no-cache bash curl git jq xz tar tzdata
+
+# Télécharger le rootfs Ubuntu officiel correspondant à l’architecture
+RUN echo "**** Build rootfs Ubuntu (${REL}) pour ${ARCH} ****" && \
+    git clone --depth=1 https://git.launchpad.net/cloud-images/+oci/ubuntu-base -b ${TAG} /build && \
+    cd /build/oci && \
+    DIGEST=$(jq -r '.manifests[0].digest[7:]' < index.json) && \
+    cd /build/oci/blobs/sha256 && \
+    if jq -e '.layers // empty' < "${DIGEST}" >/dev/null 2>&1; then \
+        TARBALL=$(jq -r '.layers[0].digest[7:]' < ${DIGEST}); \
+    else \
+        MULTIDIGEST=$(jq -r ".manifests[] | select(.platform.architecture == \"${ARCH}\") | .digest[7:]" < ${DIGEST}); \
+        TARBALL=$(jq -r '.layers[0].digest[7:]' < ${MULTIDIGEST}); \
+    fi && \
+    mkdir /rootfs && \
+    tar -xf ${TARBALL} -C /rootfs && \
+    rm -rf /rootfs/var/log/* /rootfs/home/ubuntu /rootfs/root/{.ssh,.bashrc,.profile} /build
+
+# -------------------------------------- #
+# Étape 2 — Image finale Ubuntu minimale #
+# -------------------------------------- #
+
+FROM scratch
+
+ARG TARGETARCH
+ARG BUILD_DATE
+
+# Copier le rootfs préparé
+COPY --from=builder /rootfs/ /
+
+# -------------------------- #
+# Labels conformes OCI       #
+# -------------------------- #
+LABEL maintainer="Sam Tech Lab" \
+      org.opencontainers.image.title="Ubuntu Groovy Base" \
+      org.opencontainers.image.description="Image Ubuntu 20.10 légère, durcie et multi-architecture" \
+      org.opencontainers.image.version="20.10" \
+      org.opencontainers.image.architecture=$TARGETARCH \
+      org.opencontainers.image.authors="Sam Tech Lab" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.source="https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Groovy" \
+      org.opencontainers.image.created=$BUILD_DATE
+
+# --------------------------- #
+# Environnement global        #
+# --------------------------- #
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8 \
+    TERM=xterm \
+    DEBIAN_FRONTEND=noninteractive \
+    TZ=UTC \
+    PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+# ------------------------------ #
+# Optimisations APT et conteneur #
+# ------------------------------ #
+RUN set -eux && \
+    echo "**** Optimisation Ubuntu pour Docker ****" && \
+    echo '#!/bin/sh\nexit 101' > /usr/sbin/policy-rc.d && chmod +x /usr/sbin/policy-rc.d && \
+    dpkg-divert --local --rename --add /sbin/initctl && \
+    cp -a /usr/sbin/policy-rc.d /sbin/initctl && \
+    sed -i 's/^exit.*/exit 0/' /sbin/initctl && \
+    echo 'force-unsafe-io' > /etc/dpkg/dpkg.cfg.d/docker-apt-speedup && \
+    echo 'DPkg::Post-Invoke { "rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin || true"; };' > /etc/apt/apt.conf.d/docker-clean && \
+    echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/00recommends && \
+    echo 'APT::Install-Suggests "false";' >> /etc/apt/apt.conf.d/00recommends && \
+    echo 'Acquire::Languages "none";' > /etc/apt/apt.conf.d/docker-no-languages && \
+    echo 'Acquire::GzipIndexes "true"; Acquire::CompressionTypes::Order:: "gz";' > /etc/apt/apt.conf.d/docker-gzip-indexes && \
+    echo 'Apt::AutoRemove::SuggestsImportant "false";' > /etc/apt/apt.conf.d/docker-autoremove-suggests && \
+    mkdir -p /run/systemd && echo 'docker' > /run/systemd/container
+
+# ------------------ #
+# Paquets essentiels #
+# ------------------ #
+RUN set -eux && \
+    echo "**** Installation des paquets de base ****" && \
+    apt-get update && apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+        apt-utils \
+        locales \
+        cron \
+        curl \
+        gnupg \
+        jq \
+        netcat-openbsd \
+        systemd \
+        tzdata && \
+    locale-gen en_US.UTF-8
+
+# -------------------------------------------------- #
+# Sécurité & utilisateur non-root (production-grade) #
+# -------------------------------------------------- #
+ENV PUID=999 \
+    PGID=999 \
+    HOME=/config
+
+RUN set -eux && \
+    echo "**** Création utilisateur sécurisé ****" && \
+    groupadd -g ${PGID} appuser && \
+    useradd -u ${PUID} -g ${PGID} -d /config -s /usr/sbin/nologin appuser && \
+    mkdir -p /config && chown -R appuser:appuser /config && chmod 750 /config && \
+    echo 'umask 027' >> /etc/profile && \
+    find / -xdev -type f \( -perm -4000 -o -perm -2000 \) -exec chmod a-s {} + 2>/dev/null || true && \
+    find / -xdev -type f -perm /0002 -exec chmod o-w {} + 2>/dev/null || true && \
+    passwd -l root && chmod 700 /root && \
+    echo "**** User appuser ready (UID=${PUID}, GID=${PGID}) ****"
+
+# --------------- #
+# Nettoyage final #
+# --------------- #
+RUN set -eux && \
+    echo "**** Nettoyage du système ****" && \
+    apt-get autoremove -y && apt-get clean && \
+    rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/* /var/log/*
+
+USER appuser
+
+# Définir le shell par défaut
+SHELL ["/bin/bash", "-c"]
+
+# Commande par défaut
+CMD ["/bin/bash"]
