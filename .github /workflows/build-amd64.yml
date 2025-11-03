@@ -1,0 +1,100 @@
+name: Build & Push — amd64
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'Dockerfile-amd64'
+  schedule:
+    - cron: "0 2 1 * *" # chaque 1er du mois à 02h00 UTC
+  workflow_dispatch:
+
+jobs:
+  build-amd64:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write   # Requis pour la signature Cosign keyless
+      packages: write   # Requis pour pousser sur GHCR
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute version tag
+        id: version
+        run: |
+          TAG=$(date -u +'%Y.%m')
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+      - name: Build and push to Docker Hub
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile-amd64
+          platforms: linux/amd64
+          push: true
+          tags: |
+            samtechrepo/groovy:amd64-latest
+            samtechrepo/groovy:amd64-${{ steps.version.outputs.tag }}
+          labels: |
+            maintainer="Sam Tech Lab"
+            org.opencontainers.image.title="Ubuntu Groovy Base"
+            org.opencontainers.image.version="20.04"
+            org.opencontainers.image.description="Ubuntu Groovy base image (amd64) — légère, sécurisée et maintenue par Sam Tech Lab"
+            org.opencontainers.image.authors="Sam Tech Lab"
+            org.opencontainers.image.licenses="MIT"
+            org.opencontainers.image.architecture=amd64
+            org.opencontainers.image.source=${{ github.repository }}
+            org.opencontainers.image.vendor="Sam Tech Lab"
+            org.opencontainers.image.url="https://hub.docker.com/r/samtechrepo/groovy"
+
+      - name: Build and push to GitHub Container Registry (GHCR)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile-amd64
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ghcr.io/sam-tech-lab-git/groovy:amd64-latest
+            ghcr.io/sam-tech-lab-git/groovy:amd64-${{ steps.version.outputs.tag }}
+          labels: |
+            maintainer="Sam Tech Lab"
+            org.opencontainers.image.title="Ubuntu Groovy Base"
+            org.opencontainers.image.version="20.04"
+            org.opencontainers.image.description="Ubuntu Groovy base image (amd64) — légère, sécurisée et maintenue par Sam Tech Lab"
+            org.opencontainers.image.authors="Sam Tech Lab"
+            org.opencontainers.image.licenses="MIT"
+            org.opencontainers.image.architecture=amd64
+            org.opencontainers.image.source=${{ github.repository }}
+            org.opencontainers.image.vendor="Sam Tech Lab"
+            org.opencontainers.image.url="https://ghcr.io/${{ github.repository_owner }}/groovy"
+
+      # Signature automatique des images via Cosign (OIDC keyless)
+      # - name: Install Cosign
+      #   uses: sigstore/cosign-installer@v3
+
+      # - name: Sign images (Cosign keyless)
+      #   env:
+      #     COSIGN_EXPERIMENTAL: "true"
+      #   run: |
+      #     cosign sign --yes samtechrepo/groovy:amd64-latest
+      #     cosign sign --yes samtechrepo/groovy:amd64-${{ steps.version.outputs.tag }}
