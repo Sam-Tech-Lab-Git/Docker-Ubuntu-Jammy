@@ -7,7 +7,7 @@
       </a>
     </td>
     <td align="center" width="50%">
-      <a href="https://hub.docker.com/r/samtechrepo/groovy" target="_blank">
+      <a href="https://hub.docker.com/r/samtechrepo/jammy" target="_blank">
         <img src="https://upload.wikimedia.org/wikipedia/commons/7/76/Ubuntu-logo-2022.svg?sanitize=true" 
              alt="Ubuntu Logo" width="180"/>
       </a>
@@ -16,23 +16,26 @@
 </table>
 
 <p align="center">
-  <a href="https://hub.docker.com/r/samtechrepo/groovy" target="_blank">
-    <img src="https://img.shields.io/docker/pulls/samtechrepo/groovy.svg?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Pulls"/>
+  <a href="https://hub.docker.com/r/samtechrepo/jammy" target="_blank">
+    <img src="https://img.shields.io/docker/pulls/samtechrepo/jammy.svg?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Pulls"/>
   </a>
-  <a href="https://hub.docker.com/r/samtechrepo/groovy" target="_blank">
-    <img src="https://img.shields.io/docker/stars/samtechrepo/groovy.svg?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Stars"/>
+  <a href="https://hub.docker.com/r/samtechrepo/jammy" target="_blank">
+    <img src="https://img.shields.io/docker/stars/samtechrepo/jammy.svg?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Stars"/>
   </a>
   <a href="https://github.com/Sam-Tech-Lab-Git" target="_blank">
     <img src="https://img.shields.io/static/v1?label=SamTechLab&message=GitHub&color=94398d&labelColor=555555&style=for-the-badge&logo=github&logoColor=white" alt="GitHub"/>
   </a>
-  <a href="https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Groovy/blob/main/LICENSE" target="_blank">
+  <a href="https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/blob/main/LICENSE" target="_blank">
     <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="License: MIT"/>
   </a>
-  <a href="https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Groovy/actions/workflows/build-amd64.yml" target="_blank">
-      <img src="https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Groovy/actions/workflows/build-amd64.yml/badge.svg" alt="Build amd64 — Monthly"/>
+  <a href="https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/actions/workflows/build-amd64.yml" target="_blank">
+      <img src="https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/actions/workflows/build-amd64.yml/badge.svg" alt="Build amd64 — Monthly"/>
   </a>
-  <a href="https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Groovy/actions/workflows/build-arm64.yml" target="_blank">
-      <img src="https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Groovy/actions/workflows/build-arm64.yml/badge.svg" alt="Build arm64 — Monthly"/>
+  <a href="https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/actions/workflows/build-arm64.yml" target="_blank">
+      <img src="https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/actions/workflows/build-arm64.yml/badge.svg" alt="Build arm64 — Monthly"/>
+  </a>
+  <a href="https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/actions/workflows/build-multiarch.yml" target="_blank">
+      <img src="https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/actions/workflows/build-multiarch.yml/badge.svg" alt="Build multiarch — Monthly"/>
   </a>
 </p>
 
@@ -106,8 +109,9 @@ Designed to be **secure, fast, and multi-purpose**, it includes advanced APT opt
 
 ## Dockerfile Sources
 
-- **Dockerfile amd64**: [GitHub – Sam-Tech-Lab-Git/Docker-Ubuntu-Groovy/Dockerfile-amd64](https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Groovy/blob/main/Dockerfile-amd64)
-- **Dockerfile arm64**: [GitHub – Sam-Tech-Lab-Git/Docker-Ubuntu-Groovy/Dockerfile-arm64](https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Groovy/blob/main/Dockerfile-arm64)
+- **Dockerfile amd64**: [GitHub – Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/Dockerfile-amd64](https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/blob/main/Dockerfile-amd64)
+- **Dockerfile arm64**: [GitHub – Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/Dockerfile-arm64](https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/blob/main/Dockerfile-arm64)
+- **Dockerfile multiarch** : [GitHub – Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/Dockerfile-arm64](https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/blob/main/Dockerfile-multi-arch)
 
 ---
 
@@ -116,20 +120,20 @@ Designed to be **secure, fast, and multi-purpose**, it includes advanced APT opt
 ### 1. Run an interactive container
 
 ```bash
-docker run -it --rm ghcr.io/sam-tech-lab-git/groovy:latest /bin/bash
+docker run -it --rm ghcr.io/sam-tech-lab-git/jammy:latest /bin/bash
 ```
 
 ### 2. Simple Dockerfile
 
 ```dockerfile
-FROM ghcr.io/sam-tech-lab-git/groovy:latest
+FROM ghcr.io/sam-tech-lab-git/jammy:latest
 
 RUN apt update && apt install -y nginx
 
 CMD ["nginx", "-g", "daemon off;"]
 ```
 
-This Dockerfile creates a custom image based on ghcr.io/sam-tech-lab-git/groovy:latest with NGINX preinstalled.
+This Dockerfile creates a custom image based on ghcr.io/sam-tech-lab-git/jammy:latest with NGINX preinstalled.
 
 You can then build and test it locally:
 
@@ -145,7 +149,7 @@ Create a file named docker-compose.yml:
 ```yaml
 services:
   web:
-    image: ghcr.io/sam-tech-lab-git/groovy:latest
+    image: ghcr.io/sam-tech-lab-git/jammy:latest
     container_name: nginx-web
     restart: unless-stopped
     ports:
@@ -248,8 +252,9 @@ Conçue pour être sécurisée, rapide et multi-usage, elle inclut des optimisat
 
 ## Sources du Dockerfile
 
-- **Dockerfile amd64** : [GitHub – Sam-Tech-Lab-Git/Docker-Ubuntu-Groovy/Dockerfile-amd64](https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Groovy/blob/main/Dockerfile-amd64)
-- **Dockerfile arm64** : [GitHub – Sam-Tech-Lab-Git/Docker-Ubuntu-Groovy/Dockerfile-arm64](https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Groovy/blob/main/Dockerfile-arm64)
+- **Dockerfile amd64** : [GitHub – Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/Dockerfile-amd64](https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/blob/main/Dockerfile-amd64)
+- **Dockerfile arm64** : [GitHub – Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/Dockerfile-arm64](https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/blob/main/Dockerfile-arm64)
+- **Dockerfile multiarch** : [GitHub – Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/Dockerfile-arm64](https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/blob/main/Dockerfile-multi-arch)
 
 ---
 
@@ -258,20 +263,20 @@ Conçue pour être sécurisée, rapide et multi-usage, elle inclut des optimisat
 ### 1. Lancer un conteneur interactif
 
 ```bash
-docker run -it --rm ghcr.io/sam-tech-lab-git/groovy:latest /bin/bash
+docker run -it --rm ghcr.io/sam-tech-lab-git/jammy:latest /bin/bash
 ```
 
 ### 2. Dockerfile simple
 
 ```dockerfile
-FROM ghcr.io/sam-tech-lab-git/groovy:latest
+FROM ghcr.io/sam-tech-lab-git/jammy:latest
 
 RUN apt update && apt install -y nginx
 
 CMD ["nginx", "-g", "daemon off;"]
 ```
 
-Ce Dockerfile crée une image personnalisée basée sur ghcr.io/sam-tech-lab-git/groovy:latest, avec NGINX préinstallé.
+Ce Dockerfile crée une image personnalisée basée sur ghcr.io/sam-tech-lab-git/jammy:latest, avec NGINX préinstallé.
 
 Vous pouvez ensuite la construire et la tester localement :
 
@@ -287,7 +292,7 @@ Créer un fichier nommé docker-compose.yml :
 ```yaml
 services:
   web:
-    image: ghcr.io/sam-tech-lab-git/groovy:latest
+    image: ghcr.io/sam-tech-lab-git/jammy:latest
     container_name: nginx-web
     restart: unless-stopped
     ports:
@@ -322,13 +327,15 @@ docker compose down
 
 ---
 
-## Licence
+## License / Licence
 
-Ce projet est distribué sous la licence **MIT** — consultez le fichier [LICENSE](https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Groovy/blob/main/LICENSE) pour plus de détails.
+This project is distributed under the **MIT** license — see the [LICENSE](https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/blob/main/LICENSE) file for more details.
+
+Ce projet est distribué sous la licence **MIT** — consultez le fichier [LICENSE](https://github.com/Sam-Tech-Lab-Git/Docker-Ubuntu-Jammy/blob/main/LICENSE) pour plus de détails.
 
 ---
 
-## Droit d’auteur
+## Copyright / Droit d’auteur
 
 ```text
 Copyright (c) 2025 Sam Tech Lab
